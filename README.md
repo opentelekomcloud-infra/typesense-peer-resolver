@@ -36,7 +36,7 @@ data:
   nodes: "typesense-0.ts.typesense.svc.cluster.local:8107:8108,typesense-1.ts.typesense.svc.cluster.local:8107:8108,typesense-2.ts.typesense.svc.cluster.local:8107:8108"
 ```
 
-which will be loaded as an `env` variable in the `StatefulSet` that will be facilitated by a VolumeMount that will load
+which will be loaded as an `env` variable in the `StatefulSet` that will be facilitated by a `VolumeMount` that will load
 the `ConfigMap` data as a file in the filesystem of the `Pod`: (parts of the manifests have been removed for brevity)
 
 ```
@@ -64,13 +64,17 @@ volumes:
 
 ## Usage & Configuration
 
-0) Build your own image with `docker build . -t yourRepo/typesense-node-resolver:latest` (and push that to your repo) or use `alasano/typesense-node-resolver`
+### Change Volume to `emptyDir`
 
 1) You can discard the `configMap` entirely, unless you use it for other values. Normally you're using a `secret` for the API key anyways.
 
+> [!CAUTION]
+> Entries in node list, according to the documentation, have to adhere the following pattern:
+> `statefulSetName-0.<headless-svc>.<namespace>.svc.cluster.local:8107,8108`
+
 2) Leave the `volumeMounts` as they were.
 
-3) Change the `volumes` to the following:
+3) Replace the `volumes` we discussed above with the following to the following:
 
 ```
 volumes:
