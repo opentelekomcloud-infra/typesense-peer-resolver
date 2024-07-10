@@ -66,15 +66,14 @@ volumes:
 
 ### Change Volume to `emptyDir`
 
-1) You can discard the `configMap` entirely, unless you use it for other values. Normally you're using a `secret` for the API key anyways.
+1. You can discard the `configMap` entirely, unless you use it for other values. N
 
 > [!CAUTION]
-> Entries in node list, according to the documentation, have to adhere the following pattern:
-> `statefulSetName-0.<headless-svc>.<namespace>.svc.cluster.local:8107,8108`
+> Use a `Secret` for the API keys or other sensitive values.
 
-2) Leave the `volumeMounts` as they were.
+2. Leave the `volumeMounts` as is.
 
-3) Replace the `volumes` we discussed above with the following to the following:
+3. Replace the `volumes`, we discussed above, with the following:
 
 ```
 volumes:
@@ -82,7 +81,10 @@ volumes:
         emptyDir: {}
 ```
 
-4) You'll need to create a `ServiceAccount` , `Role` and `RoleBinding` for the sidecar.
+### Create RBAC
+
+In order the watcher to be able to get a list of the endpoints, it has to be granted the permissions to the specific resources.
+For that matter we will create in the same namespace we installed Typesense a `ServiceAccount`, a `Role` and a `RoleBinding`:
 
 ```
 apiVersion: v1
@@ -90,8 +92,6 @@ kind: ServiceAccount
 metadata:
   name: typesense-service-account
   namespace: typesense
-# imagePullSecrets:
-#   - name: your-image-pull-secret
 ```
 
 ```
@@ -103,7 +103,7 @@ metadata:
 rules:
 - apiGroups: [""]
   resources: ["endpoints"]
-  verbs: ["watch", "list"]
+  verbs: ["get", "watch", "list"]
 ```
 
 ```
@@ -121,6 +121,8 @@ subjects:
   name: typesense-service-account
   namespace: typesense
 ```
+
+### Assign the ServiceAccount to the Pod of the StatefulSet
 
 5) Finally, you can add the sidecar to the pod containers and set one of a handful of configuration parameters
 
@@ -146,5 +148,3 @@ subjects:
 
 You can see a full example in [typesense.yaml](/typesense.yml)
 
-
-_All credit for initial implementation goes to [Elliot Wright](https://github.com/seeruk) - Forked from [github.com/seeruk/tsns](https://github.com/seeruk/tsns)_
