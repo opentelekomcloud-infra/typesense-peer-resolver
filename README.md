@@ -1,19 +1,24 @@
-# Typesense Kubernetes Node Resolver
-*A sidecar container for Typesense that helps operate HA Typesense clusters in Kubernetes.*
+# Typesense Peer Resolver for Kubernetes
+A sidecar container for Typesense that automatically reset the nodes peer value for HA Typesense clusters in Kubernetes
+by identifying the new endpoints of the headless service.
 
 ### Problem
-When restarting/upgrading Typesense nodes in a high availability cluster running in Kubernetes, DNS entries of the stateful set do not get resolved again with the new IP, causing the pod to be unable to rejoin the cluster. 
+When restarting/upgrading Typesense nodes in a high-availability cluster scenario running in Kubernetes, 
+DNS entries of the StatefulSet do not get resolved again with the new IP, causing the pod to be unable to rejoin the cluster,
+even if you have enabled the `TYPESENSE_RESET_PEERS_ON_ERROR` flag
 
 ### Solution
-Instead of storing the `nodeslist` values in a configmap (as a file through a volume), the `nodeslist` volume is configured with `emptyDir` and the sidecar container dynamically updates the values of the nodelist. 
-
-To do this it watches endpoints in the configured namespace for changes and sets IPs as node values rather than using DNS. 
+Instead of storing the `nodeslist` values in a configmap (as a file through a volume), the `nodeslist` volume is configured 
+with `emptyDir` and the sidecar container dynamically updates the values of the nodelist. To do this it watches the endpoints 
+in the configured namespace for changes, and sets the collected IPs as node values rather than using the internal DNS name of the Pod. 
 
 ```
 typesense-0.ts.typesense.svc.cluster.local:8107:8108
 ```
-**format**: statefulSetName-0.serviceName.nameSpace...
 
+:::note
+entries according to the documentation have to adhere the following pattern: `statefulSetName-0.<headless-svc>.<namespace>.svc.cluster.local:8107,8108`
+:::
  _usually preferred_
 
 VS.
