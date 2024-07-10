@@ -1,15 +1,139 @@
 apiVersion: v1
-kind: Namespace
+kind: ServiceAccount
 metadata:
-  name: typesense
+  name: typesense-service-account
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: typesense-role
+  labels:
+    app.kubernetes.io/name: typesense
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: typesense-role-binding
+  labels:
+    app.kubernetes.io/name: typesense
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: typesense-role
+subjects:
+  - kind: ServiceAccount
+    name: typesense-service-account
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: typesense-nodeslist
+data:
+  nodes: typesense-ts-0.typesense-svc.typesense.svc.cluster.local:8107:8108,typesense-ts-1.typesense-svc.typesense.svc.cluster.local:8107:8108,typesense-ts-2.typesense-svc.typesense.svc.cluster.local:8107:8108
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: typesense-api-keys
+data:
+  typesense-api-key: 123
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+      name: typesense-ts
+      labels:
+        app: typesense
+spec:
+      serviceName: typesense-svc
+      podManagementPolicy: Parallel
+      replicas: 3
+      selector:
+        matchLabels:
+          app: typesense
+      template:
+        metadata:
+          labels:
+            app: typesense
+        spec:
+          containers:
+            - name: typesense
+              image: typesense/typesense:26.0
+              env:
+                - name: TYPESENSE_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: typesense-api-key
+                      name: typesense-api-keys
+                - name: TYPESENSE_NODES
+                  value: "/usr/share/typesense/nodes"
+                - name: TYPESENSE_DATA_DIR
+                  value: "/usr/share/typesense/data"
+                - name: TYPESENSE_API_PORT
+                  value: "8108"
+                - name: TYPESENSE_PEERING_PORT
+                  value: "8107"
+                - name: TYPESENSE_ENABLE_CORS
+                  value: "true"
+                - name: TYPESENSE_CORS_DOMAINS
+                  value: "http://{{ .Values.docusaurus.host }},https://{{ .Values.docusaurus.host }},https://{{ .Values.typesenseReverseProxy.host }},http://{{ .Values.typesenseReverseProxy.host }}"
+                - name: TYPESENSE_RESET_PEERS_ON_ERROR
+                  value: "true"
+              ports:
+                - containerPort: 8108
+                  name: http
+              resources:
+                limits:
+                  cpu: 1024m
+                  memory: 512Mi
+                requests:
+                  cpu: 128m
+                  memory: 112Mi
+              volumeMounts:
+                - mountPath: /usr/share/typesense
+                  name: nodeslist
+                - mountPath: /usr/share/typesense/data
+                  name: data
+            - name: peer-resolver
+              image: akyriako78/typesense-peer-resolver:v0.1.0-dev.2
+              command:
+                - "/opt/tspr"
+                - "-namespace=typesense"
+                - "-service=typesense-svc"
+              volumeMounts:
+                         - name: nodeslist
+                           mountPath: /usr/share/typesense
+          serviceAccountName: typesense-service-account
+          securityContext:
+                         fsGroup: 2000
+                         runAsGroup: 3000
+                         runAsNonRoot: true
+                         runAsUser: 10000
+          terminationGracePeriodSeconds: 300
+          volumes:
+                         - name: nodeslist
+                           emptyDir: {}
+                           
+      updateStrategy: {}
+      volumeClaimTemplates:
+      - metadata:
+          name: data
+        spec:
+          accessModes:
+           - ReadWriteOnce
+          resources:
+            requests:
+             storage: 10Gi
+          storageClassName: csi-disk
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: ts
-  namespace: typesense
-  labels:
-    app: typesense
+  name: typesense-svc
 spec:
   clusterIP: None
   publishNotReadyAddresses: true
@@ -19,135 +143,3 @@ spec:
     - name: http
       port: 8108
       targetPort: 8108
----
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: typesense-config
-#   namespace: typesense
-# data:
-#   TYPESENSE_ENABLE_CORS: "true"
-# ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: typesense-secret
-  namespace: typesense
-data:
-  TYPESENSE_API_KEY: YWJj # abc in base64
----
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: typesense
-  namespace: typesense
-  labels:
-    service: typesense
-    app: typesense
-spec:
-  serviceName: ts
-  podManagementPolicy: Parallel
-  replicas: 3
-  selector:
-    matchLabels:
-      service: typesense
-      app: typesense
-  template:
-    metadata:
-      labels:
-        service: typesense
-        app: typesense
-    spec:
-      serviceAccountName: typesense-service-account
-      securityContext:
-        fsGroup: 2000
-        runAsUser: 10000
-        runAsGroup: 3000
-        runAsNonRoot: true
-      terminationGracePeriodSeconds: 300
-      containers:
-        - name: typesense
-          envFrom:
-            # - configMapRef: 
-            #     name: typesense-config
-            - secretRef:
-                name: typesense-secret
-          image: typesense/typesense:0.22.2
-          command:
-            - "/opt/typesense-server"
-            - "-d"
-            - "/usr/share/typesense/data"
-            - "--api-port"
-            - "8108"
-            - "--peering-port"
-            - "8107"
-            - "--nodes"
-            - "/usr/share/typesense/nodes"
-          ports:
-            - containerPort: 8108
-              name: http
-          resources:
-            requests:
-              memory: 100Mi
-              cpu: "100m"
-            limits:
-              memory: 1Gi
-              cpu: "1000m"
-          volumeMounts:
-            - name: nodeslist
-              mountPath: /usr/share/typesense
-            - name: data
-              mountPath: /usr/share/typesense/data
-        - name: typesense-node-resolver
-          image: alasano/typesense-node-resolver
-          command:
-            - "/opt/tsns"
-            - "-namespace=typesense"
-          volumeMounts:
-          - name: nodeslist
-            mountPath: /usr/share/typesense
-      volumes:
-        - name: nodeslist
-          emptyDir: {}
-  volumeClaimTemplates:
-    - metadata:
-        name: data
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        storageClassName: default
-        resources:
-          requests:
-            storage: 30Gi
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: typesense-service-account
-  namespace: typesense
-# imagePullSecrets:
-#  - name: your-image-pull-secret
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  namespace: typesense
-  name: typesense-role
-rules:
-- apiGroups: [""]
-  resources: ["endpoints"]
-  verbs: ["watch", "list"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: typesense-role-binding
-  namespace: typesense
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: typesense-role
-subjects:
-- kind: ServiceAccount
-  name: typesense-service-account
-  namespace: typesense

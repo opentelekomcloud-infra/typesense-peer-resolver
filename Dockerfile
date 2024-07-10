@@ -1,18 +1,18 @@
-FROM golang:1.17-alpine AS builder
+FROM golang:1.22-alpine AS builder
 
-WORKDIR /go/src/github.com/seeruk/tsns
+WORKDIR /go/src/github.com/akyriako/typesense-peer-resolver
 
 ADD . .
 
 RUN set -euxo pipefail \
  && go mod download \
- && CGO_ENABLED=0 go build -ldflags "-s -w" -o tsns .
+ && CGO_ENABLED=0 go build -ldflags "-s -w" -o tspr .
 
 # Run steps
 FROM alpine:3
 
-COPY --from=builder /go/src/github.com/seeruk/tsns/tsns /opt
+COPY --from=builder /go/src/github.com/akyriako/typesense-peer-resolver/tspr /opt
 
 RUN mkdir -p /usr/share/typesense
 
-ENTRYPOINT ["/opt/tsns"]
+ENTRYPOINT ["/opt/tspr"]

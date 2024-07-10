@@ -19,17 +19,19 @@ import (
 )
 
 func main() {
-	var namespace, service, nodesFile string
+	var namespace, service, nodesFile, kubeConfig string
 	var peerPort, apiPort int
 
-	flag.StringVar(&namespace, "namespace", "typesense", "The namespace that typesense is installed within")
-	flag.StringVar(&service, "service", "typesense-svc", "The name of the typesense service to use the endpoints of")
-	flag.StringVar(&nodesFile, "nodes-file", "/usr/share/typesense/nodes", "The location of the file to write node information to")
-	flag.IntVar(&peerPort, "peer-port", 8107, "Port on which typesense peering service listens")
-	flag.IntVar(&apiPort, "api-port", 8108, "Port on which typesense API service listens")
+	flag.StringVar(&kubeConfig, "kubeconfig", "config", "kubeconfig file in ~/.kube to work with")
+	flag.StringVar(&namespace, "namespace", "typesense", "namespace that typesense is installed within")
+	flag.StringVar(&service, "service", "typesense-svc", "name of the typesense service to use the endpoints of")
+	flag.StringVar(&nodesFile, "nodes-file", "/usr/share/typesense/nodes", "location of the file to write node information to")
+	flag.IntVar(&peerPort, "peer-port", 8107, "port on which typesense peering service listens")
+	flag.IntVar(&apiPort, "api-port", 8108, "port on which typesense API service listens")
 	flag.Parse()
 
-	configPath := filepath.Join(homedir.HomeDir(), ".kube", "config")
+	log.Printf("watching endpoints for service: %s/%s [peerPort: %d, apiPort: %d]\n", namespace, service, peerPort, apiPort)
+	configPath := filepath.Join(homedir.HomeDir(), ".kube", kubeConfig)
 
 	var config *rest.Config
 	var err error
@@ -80,7 +82,11 @@ func getNodes(clients *kubernetes.Clientset, namespace, service string, peerPort
 		}
 
 		for _, s := range e.Subsets {
-			for _, a := range s.Addresses {
+			addresses := s.Addresses
+			if s.Addresses == nil || len(s.Addresses) == 0 {
+				addresses = s.NotReadyAddresses
+			}
+			for _, a := range addresses {
 				for _, p := range s.Ports {
 					// Typesense exporter sidecar for Prometheus runs on port 9000
 					if int(p.Port) == apiPort {
