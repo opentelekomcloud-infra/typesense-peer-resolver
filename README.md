@@ -200,8 +200,5 @@ the following command arguments:
 > ```
 > with the change above is guaranteed that the watcher will collect the endpoints of the new peers and add the to the nodes list.
 
-
-### Full Example
-
-You can see a full example in [typesense.yaml](/typesense.yml)
+You can find a complete ready-to-install manifest here: [typesense.yaml](/typesense.yml)
 
