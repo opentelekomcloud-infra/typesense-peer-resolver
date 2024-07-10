@@ -147,7 +147,7 @@ Last step is to add the sidecar definition in the manifest of `StatefulSet` (und
 
 ```yaml
 - name: peer-resolver
-  image: akyriako78/typesense-peer-resolver:v0.1.0-dev.3
+  image: akyriako78/typesense-peer-resolver:latest
   command:
     - "/opt/tspr"
     - "-namespace=typesense"
@@ -156,6 +156,14 @@ Last step is to add the sidecar definition in the manifest of `StatefulSet` (und
     - name: nodeslist
       mountPath: /usr/share/typesense
 ```
+
+> [!NOTE]
+> You can of course build and use your own container image:
+> 
+> ```shell
+> docker build . -t <docker-account>/typesense-peer-resolver:<tag>
+> docker push <docker-account>/typesense-peer-resolver:<tag>
+> ```
 
 * `-namespace=NS` // _Namespace in which Typesense is installed (default: typesense)_
 * `-service=SVC` // _Service for which to retrieve endpoints (default: ts)_
