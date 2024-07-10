@@ -16,9 +16,10 @@ in the configured namespace for changes, and sets the collected IPs as node valu
 typesense-0.ts.typesense.svc.cluster.local:8107:8108
 ```
 
-:::note
-entries according to the documentation have to adhere the following pattern: `statefulSetName-0.<headless-svc>.<namespace>.svc.cluster.local:8107,8108`
-:::
+> [!NOTE]
+> Entries in node list, according to the documentation, have to adhere the following pattern: 
+> `statefulSetName-0.<headless-svc>.<namespace>.svc.cluster.local:8107,8108`
+
  _usually preferred_
 
 VS.
