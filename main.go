@@ -22,11 +22,11 @@ func main() {
 	var namespace, service, nodesFile string
 	var peerPort, apiPort int
 
-	flag.StringVar(&namespace, "namespace", "typesense", "The namespace that Typesense is installed within")
-	flag.StringVar(&service, "service", "ts", "The name of the Typesense service to use the endpoints of")
+	flag.StringVar(&namespace, "namespace", "typesense", "The namespace that typesense is installed within")
+	flag.StringVar(&service, "service", "typesense-svc", "The name of the typesense service to use the endpoints of")
 	flag.StringVar(&nodesFile, "nodes-file", "/usr/share/typesense/nodes", "The location of the file to write node information to")
-	flag.IntVar(&peerPort, "peer-port", 8107, "Port on which Typesense peering service listens")
-	flag.IntVar(&apiPort, "api-port", 8108, "Port on which Typesense API service listens")
+	flag.IntVar(&peerPort, "peer-port", 8107, "Port on which typesense peering service listens")
+	flag.IntVar(&apiPort, "api-port", 8108, "Port on which typesense API service listens")
 	flag.Parse()
 
 	configPath := filepath.Join(homedir.HomeDir(), ".kube", "config")
