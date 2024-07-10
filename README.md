@@ -165,11 +165,17 @@ Last step is to add the sidecar definition in the manifest of `StatefulSet` (und
 > docker push <docker-account>/typesense-peer-resolver:<tag>
 > ```
 
-* `-namespace=NS` // _Namespace in which Typesense is installed (default: typesense)_
-* `-service=SVC` // _Service for which to retrieve endpoints (default: ts)_
-* `-nodes-file=PATH` // _The location to write the nodes list to (default: /usr/share/typesense/nodes)
-* `-peer-port=PORT` // _Port on which Typesense peering service listens (default: 8107)_
-* `-api-port=PORT` // _Port on which Typesense API service listens (default: 8108)_
+## Develop & Test Locally
+
+You can of course work outside of the cluster, by running or debugging the code from your IDE of preference. The tool has
+the following command arguments:
+
+* `-kubeconfig (default=config)`: kubeconfig file in ~/.kube to work with
+* `-namespace (default=typesense)`: namespace that typesense is installed within
+* `-service (default=typesense-svc)`: name of the typesense service to use the endpoints of
+* `-nodes-file (default=/usr/share/typesense/nodes)`: location of the file to write node information to
+* `-peer-port (default=8107)`: port on which typesense peering service listens
+* `-api-port (default=8108)`: port on which typesense API service listens
 
 ### Full Example
 
