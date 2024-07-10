@@ -177,6 +177,26 @@ the following command arguments:
 * `-peer-port (default=8107)`: port on which typesense peering service listens
 * `-api-port (default=8108)`: port on which typesense API service listens
 
+> [!IMPORTANT]
+> Major difference from the upstream is that this version can identify even the IP addresses of **non-ready** Typesense pods,
+> in case you cannot or don't want to enable the `publishNotReadyAddresses` property of the headless service. 
+>
+> ```go
+>    for _, s := range e.Subsets {
+>			addresses := s.Addresses
+>			if s.Addresses == nil || len(s.Addresses) == 0 {
+>				addresses = s.NotReadyAddresses
+>			}
+>			for _, a := range addresses {
+>				for _, p := range s.Ports {
+>					if int(p.Port) == apiPort {
+>						nodes = append(nodes, fmt.Sprintf("%s:%d:%d", a.IP, peerPort, p.Port))
+>					}
+>				}
+>			}
+>		}
+> ```
+
 ### Full Example
 
 You can see a full example in [typesense.yaml](/typesense.yml)

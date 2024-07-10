@@ -88,7 +88,6 @@ func getNodes(clients *kubernetes.Clientset, namespace, service string, peerPort
 			}
 			for _, a := range addresses {
 				for _, p := range s.Ports {
-					// Typesense exporter sidecar for Prometheus runs on port 9000
 					if int(p.Port) == apiPort {
 						nodes = append(nodes, fmt.Sprintf("%s:%d:%d", a.IP, peerPort, p.Port))
 					}
