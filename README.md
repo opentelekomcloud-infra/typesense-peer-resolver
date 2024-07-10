@@ -122,20 +122,39 @@ subjects:
   namespace: typesense
 ```
 
-### Assign the ServiceAccount to the Pod of the StatefulSet
+### Assign the `ServiceAccount` to the `Pod` of the `StatefulSet`
 
-5) Finally, you can add the sidecar to the pod containers and set one of a handful of configuration parameters
+In order to bind the containers running in the pod with the service account we just created, add the `serviceAccountName`
+property in the manifest of the `StatefulSet`:
 
+```yaml
+spec:
+      containers:
+        - name: typesense
+          image: typesense/typesense:26.0
+          ...
+      serviceAccountName: typesense-service-account
+      securityContext:
+        fsGroup: 2000
+        runAsGroup: 3000
+        runAsNonRoot: true
+        runAsUser: 10000
 ```
-- name: ts-node-resolver
-    image: alasano/typesense-node-resolver
-    command:
-        - "/opt/tsns"
-        - "-namespace=someOtherNamespace"
-    volumeMounts:
-        - name: nodeslist
-        mountPath: /usr/share/typesense
 
+### Add the sidecar
+
+Last step is to add the sidecar definition in the manifest of `StatefulSet` (under the `containers` stanza):
+
+```yaml
+- name: peer-resolver
+  image: akyriako78/typesense-peer-resolver:v0.1.0-dev.3
+  command:
+    - "/opt/tspr"
+    - "-namespace=typesense"
+    - "-service=typesense-svc"
+  volumeMounts:
+    - name: nodeslist
+      mountPath: /usr/share/typesense
 ```
 
 * `-namespace=NS` // _Namespace in which Typesense is installed (default: typesense)_
