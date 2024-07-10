@@ -20,19 +20,11 @@ typesense-0.ts.typesense.svc.cluster.local:8107:8108
 > Entries in node list, according to the documentation, have to adhere the following pattern: 
 > `statefulSetName-0.<headless-svc>.<namespace>.svc.cluster.local:8107,8108`
 
- _usually preferred_
-
-VS.
-
-```
-10.244.1.215:8107:8108
-``` 
-_created by the sidecar, solves the DNS resolution issue_
-
+but in this case the DNS entries will be replaced by the ephemeral IPs of the Pods: `10.244.1.215:8107:8108`
 
 ## Context
 
-Normally you'd have a configmap like this
+Normally you'd have a `ConfigMap` like this
 
 ```
 apiVersion: v1
@@ -44,34 +36,23 @@ data:
   nodes: "typesense-0.ts.typesense.svc.cluster.local:8107:8108,typesense-1.ts.typesense.svc.cluster.local:8107:8108,typesense-2.ts.typesense.svc.cluster.local:8107:8108"
 ```
 
-With a `command` for the Typesense container (located within the StatefulSet definition) which points to that information (as a file)
+which will be loaded as an `env` variable in the `StatefulSet` that will be facilitated by a VolumeMount that will load
+the `ConfigMap` data as a file in the filesystem of the `Pod`: (parts of the manifests have been removed for brevity)
 
 ```
-command:
-    - "/opt/typesense-server"
-    - "-d"
-    - "/usr/share/typesense/data"
-    - "--api-port"
-    - "8108"
-    - "--peering-port"
-    - "8107"
-    - "--nodes"
-    - "/usr/share/typesense/nodes"
-```
+...
+    
+    - name: TYPESENSE_NODES
+      value: "/usr/share/typesense/nodes"
+    ...
 
-Along with the volume mount
+    volumeMounts:
+        - name: nodeslist
+            mountPath: /usr/share/typesense
+        - name: data
+            mountPath: /usr/share/typesense/data
+...
 
-```
-volumeMounts:
-    - name: nodeslist
-        mountPath: /usr/share/typesense
-    - name: data
-        mountPath: /usr/share/typesense/data
-```
-
-And finally the `volumes`
-
-```
 volumes:
     - name: nodeslist
         configMap:
