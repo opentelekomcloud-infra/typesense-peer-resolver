@@ -181,7 +181,7 @@ the following command arguments:
 > **Major difference** from the upstream is that this version can identify even the IP addresses of **non-ready** Typesense pods,
 > in case you cannot or don't want to enable the `publishNotReadyAddresses` property of the headless service. That combination could
 > lead to a _Catch22 situation_ where the pods could not get in _Ready_ state because they do not have a nodes-list defined and 
-> the `s.Addresses` is always null as the headless service is not publishing the endpoitns of not-ready pods.  
+> the `s.Addresses` is always null as the headless service is not publishing the endpoints of not-ready pods.  
 >
 > ```go
 >    for _, s := range e.Subsets {
@@ -198,7 +198,7 @@ the following command arguments:
 >		}
 >	}
 > ```
-
+> with the change above is guaranteed that the watcher will collect the endpoints of the new peers and add the to the nodes list.
 
 
 ### Full Example
