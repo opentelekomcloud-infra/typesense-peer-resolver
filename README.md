@@ -183,18 +183,18 @@ the following command arguments:
 >
 > ```go
 >    for _, s := range e.Subsets {
->			addresses := s.Addresses
->			if s.Addresses == nil || len(s.Addresses) == 0 {
->				addresses = s.NotReadyAddresses
->			}
->			for _, a := range addresses {
->				for _, p := range s.Ports {
->					if int(p.Port) == apiPort {
->						nodes = append(nodes, fmt.Sprintf("%s:%d:%d", a.IP, peerPort, p.Port))
->					}
+>		addresses := s.Addresses
+>		if s.Addresses == nil || len(s.Addresses) == 0 {
+>			addresses = s.NotReadyAddresses
+>		}
+>		for _, a := range addresses {
+>			for _, p := range s.Ports {
+>				if int(p.Port) == apiPort {
+>					nodes = append(nodes, fmt.Sprintf("%s:%d:%d", a.IP, peerPort, p.Port))
 >				}
 >			}
 >		}
+>	}
 > ```
 
 ### Full Example
