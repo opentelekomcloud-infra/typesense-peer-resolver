@@ -10,6 +10,7 @@ jobs:
     name: Push Docker image to Container Registry
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       packages: write
       contents: read
       attestations: write
@@ -51,7 +52,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate Artifact Attestation
-        id: attest
+        id: attest-artifacts
         uses: actions/attest-build-provenance@v1
         env:
           IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
@@ -59,13 +60,20 @@ jobs:
           subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-      
-      - name: Generate SBOM Attestation
-        uses: actions/attest-sbom@v1
-        env:
-          IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        id: sbom
         with:
-          subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          sbom-path: 'sbom.json'
-          push-to-registry: true
+          image: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
+          artifact-name: ${{ github.event.repository.name }}-${{github.run_number}}-sbom.spdx.json
+      
+      # - name: Generate SBOM Attestation
+      #   uses: actions/attest-sbom@v1
+      #   env:
+      #     IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
+      #   with:
+      #     subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
+      #     subject-digest: ${{ steps.push.outputs.digest }}
+      #     sbom-path: 'sbom.json'
+      #     push-to-registry: true
