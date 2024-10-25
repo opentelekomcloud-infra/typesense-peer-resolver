@@ -56,6 +56,6 @@ jobs:
         env:
           IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
         with:
-          subject-name:  ${{ env.IMAGE_NAME}}
+          subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
