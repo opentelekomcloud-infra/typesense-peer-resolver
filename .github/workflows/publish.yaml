@@ -43,8 +43,9 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-              ${{ secrets.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ steps.commit_hash.outputs.short }}
-              ${{ secrets.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:latest
+              ${{ vars.DOCKER_NS }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
+              ${{ vars.DOCKER_NS }}/${{ vars.DOCKER_REPO }}:${{ steps.commit_hash.outputs.short }}
+              ${{ vars.DOCKER_NS }}/${{ vars.DOCKER_REPO }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate Artifact Attestation
