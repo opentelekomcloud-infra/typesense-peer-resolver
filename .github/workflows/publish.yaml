@@ -16,7 +16,7 @@ jobs:
       id-token: write
 
     steps:
-      - name: Check out the repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Log in to Container Registry
@@ -31,19 +31,25 @@ jobs:
         with:
           images: ${{ vars.DOCKER_NS }}/${{ vars.DOCKER_REPO }}
 
-      - name: Build and push Docker image
+      - name: Get Commit Hash
+        id: commit_hash
+        uses: prompt/actions-commit-hash@v3
+
+      - name: Build and Push Docker Image
         id: push
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+              ${{ secrets.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ steps.commit_hash.outputs.short }}
+              ${{ secrets.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Generate artifact attestation
+      - name: Generate Artifact Attestation
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-name: ${{ secrets.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ steps.commit_hash.outputs.short }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
