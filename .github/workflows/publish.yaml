@@ -22,14 +22,15 @@ jobs:
       - name: Log in to Container Registry
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
+          registry: ${{ vars.CONTAINER_REGISTRY }}
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-        with:
-          images: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
+      # - name: Extract metadata (tags, labels) for Docker
+      #   id: meta
+      #   uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+      #   with:
+      #     images: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
 
       - name: Get Commit Hash
         id: commit_hash
@@ -46,11 +47,12 @@ jobs:
               ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
               ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ steps.commit_hash.outputs.short }}
               ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:latest
-          labels: ${{ steps.meta.outputs.labels }}
+          # labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate Artifact Attestation
+        id: attest
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
+          subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
