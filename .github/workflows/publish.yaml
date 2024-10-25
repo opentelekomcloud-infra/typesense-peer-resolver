@@ -34,10 +34,11 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: |
-            ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
-            ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ steps.commit_hash.outputs.short }}
-            ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:latest
+          images: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
+          tags: |
+            type=raw,value=${{ vars.APP_VERSION }}.${{github.run_number}}
+            type=raw,value=${{ steps.commit_hash.outputs.short }}
+            type=raw,value=latest
 
       - name: Build and Push Docker Image
         id: push
@@ -46,17 +47,14 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: |
-              ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
-              ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ steps.commit_hash.outputs.short }}
-              ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:latest
-          # labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate Artifact Attestation
         id: attest
         uses: actions/attest-build-provenance@v1
         env:
-          IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
+          IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
         with:
           subject-name:  ${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
