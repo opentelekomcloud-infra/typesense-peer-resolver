@@ -68,12 +68,13 @@ jobs:
           image: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
           artifact-name: ${{ github.event.repository.name }}-${{github.run_number}}-sbom.spdx.json
       
-      # - name: Generate SBOM Attestation
-      #   uses: actions/attest-sbom@v1
-      #   env:
-      #     IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
-      #   with:
-      #     subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
-      #     subject-digest: ${{ steps.push.outputs.digest }}
-      #     sbom-path: 'sbom.json'
-      #     push-to-registry: true
+      - name: Generate SBOM Attestation
+        id: attest-sbom
+        uses: actions/attest-sbom@v1
+        env:
+          IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
+        with:
+          subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          sbom-path: ${{ github.event.repository.name }}-${{github.run_number}}-sbom.spdx.json
+          push-to-registry: true
