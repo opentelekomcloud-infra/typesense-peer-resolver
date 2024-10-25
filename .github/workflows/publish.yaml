@@ -26,11 +26,11 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      # - name: Extract metadata (tags, labels) for Docker
-      #   id: meta
-      #   uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-      #   with:
-      #     images: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
 
       - name: Get Commit Hash
         id: commit_hash
@@ -55,6 +55,6 @@ jobs:
         env:
           IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
         with:
-          subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-name:  ${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
