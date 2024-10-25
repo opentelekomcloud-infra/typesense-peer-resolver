@@ -52,6 +52,8 @@ jobs:
       - name: Generate Artifact Attestation
         id: attest
         uses: actions/attest-build-provenance@v1
+        env:
+          IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
         with:
           subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
