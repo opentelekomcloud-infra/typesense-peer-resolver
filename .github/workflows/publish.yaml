@@ -26,15 +26,18 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
+      - name: Get Commit Hash
+        id: commit_hash
+        uses: prompt/actions-commit-hash@v3
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
-
-      - name: Get Commit Hash
-        id: commit_hash
-        uses: prompt/actions-commit-hash@v3
+          images: |
+            ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
+            ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ steps.commit_hash.outputs.short }}
+            ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:latest
 
       - name: Build and Push Docker Image
         id: push
