@@ -60,22 +60,22 @@ jobs:
           subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-
-      - name: Generate SBOM
-        uses: anchore/sbom-action@v0
-        id: sbom
-        with:
-          image: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
-          artifact-name: ${{ github.event.repository.name }}-${{github.run_number}}-sbom.spdx.json
-          output-file: /tmp
-      
-      - name: Generate SBOM Attestation
-        id: attest-sbom
-        uses: actions/attest-sbom@v1
-        env:
-          IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
-        with:
-          subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          sbom-path: /tmp/${{ github.event.repository.name }}-${{github.run_number}}-sbom.spdx.json
-          push-to-registry: true
+#
+#      - name: Generate SBOM
+#        uses: anchore/sbom-action@v0
+#        id: sbom
+#        with:
+#          image: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
+#          artifact-name: ${{ github.event.repository.name }}-${{github.run_number}}-sbom.spdx.json
+#          output-file: /tmp
+#
+#      - name: Generate SBOM Attestation
+#        id: attest-sbom
+#        uses: actions/attest-sbom@v1
+#        env:
+#          IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
+#        with:
+#          subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
+#          subject-digest: ${{ steps.push.outputs.digest }}
+#          sbom-path: /tmp/${{ github.event.repository.name }}-${{github.run_number}}-sbom.spdx.json
+#          push-to-registry: true
