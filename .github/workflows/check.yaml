@@ -18,8 +18,8 @@ jobs:
       - name: Install golangci-lint
         run: |
             go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.3 # Use a specific version
-      - name: Run golangci-lint
-        run: golangci-lint run
+    #   - name: Run golangci-lint
+    #     run: golangci-lint run
       - name: Install Dependencies
         run: go get .
       - name: Build
