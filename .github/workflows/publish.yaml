@@ -23,10 +23,9 @@ jobs:
       - name: Log in to Container Registry
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
-          registry: ${{ vars.CONTAINER_REGISTRY }}
-          username: ${{ vars.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-
+          registry: ${{ secrets.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Get Commit Hash
         id: commit_hash
         uses: prompt/actions-commit-hash@v3
@@ -35,7 +34,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
+          images:  ${{ secrets.REGISTRY }}/${{ vars.CONTAINER_REGISTRY_ORG }}/typesense-peer-resolver
           tags: |
             type=raw,value=${{ vars.APP_VERSION }}.${{github.run_number}}
             type=raw,value=${{ steps.commit_hash.outputs.short }}
@@ -51,31 +50,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Generate Artifact Attestation
-        id: attest-artifacts
-        uses: actions/attest-build-provenance@v1
-        env:
-          IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
-        with:
-          subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
-#
-#      - name: Generate SBOM
-#        uses: anchore/sbom-action@v0
-#        id: sbom
-#        with:
-#          image: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}:${{ vars.APP_VERSION }}.${{github.run_number}}
-#          artifact-name: ${{ github.event.repository.name }}-${{github.run_number}}-sbom.spdx.json
-#          output-file: /tmp
-#
-#      - name: Generate SBOM Attestation
-#        id: attest-sbom
-#        uses: actions/attest-sbom@v1
-#        env:
-#          IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ vars.DOCKER_REPO }}
-#        with:
-#          subject-name:  ${{ vars.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME}}
-#          subject-digest: ${{ steps.push.outputs.digest }}
-#          sbom-path: /tmp/${{ github.event.repository.name }}-${{github.run_number}}-sbom.spdx.json
-#          push-to-registry: true
+     
