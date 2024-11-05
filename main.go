@@ -10,12 +10,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func main() {
@@ -83,7 +82,7 @@ func getNodes(clients *kubernetes.Clientset, namespace, service string, peerPort
 
 		for _, s := range e.Subsets {
 			addresses := s.Addresses
-			if s.Addresses == nil || len(s.Addresses) == 0 {
+			if len(s.Addresses) == 0 {
 				addresses = s.NotReadyAddresses
 			}
 			for _, a := range addresses {
