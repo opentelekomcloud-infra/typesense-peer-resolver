@@ -1,0 +1,23 @@
+name: Go Lint check
+
+on:
+  pull_request:
+    branches: [ '*' ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 'stable'
+
+      - name: Install golangci-lint
+        run: |
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.3 # Use a specific version
+
+      - name: Run golangci-lint
+        run: golangci-lint run
