@@ -1,7 +1,7 @@
 🚨🚨🚨**Repository Archived** 📦
 
 This repository has been archived and is no longer maintained. It has been replaced by [Typesense Kubernetes Operator](https://github.com/akyriako/typesense-operator), which will receive all future updates and improvements.
-Please stop using this Helm Chart and refer to the new repository. Thank you!
+Please stop using this repository and refer to the new one. Thank you!
 
 # Typesense Peer Resolver for Kubernetes
 
